@@ -1,72 +1,46 @@
-# Malaria — pipeline PySpark
+# Malaria PySpark
 
-Projet de classification d'images de cellules : préparation avec PySpark, entraînement d'un modèle puis visualisation avec Streamlit.
+Classification d'images de cellules avec PySpark et Random Forest. Les résultats sont consultables dans Streamlit.
 
-## État actuel
+## Démarrage
 
-Le notebook `02_training.ipynb` et le dashboard `app.py` sont maintenant disponibles. Ils doivent être exécutés avec les données pour produire de vrais résultats.
+1. Télécharger le dataset associé au [notebook Kaggle](https://www.kaggle.com/code/kushal1996/detecting-malaria-cnn/input).
+2. Décompresser les images dans Google Drive, en conservant les dossiers Parasitized et Uninfected.
+3. Ouvrir [01_exploration dans Colab](https://colab.research.google.com/github/Youss9241/malaria-pyspark/blob/main/notebooks/01_exploration.ipynb), adapter DATA_DIR et exécuter les cellules.
+4. Ouvrir [02_training dans Colab](https://colab.research.google.com/github/Youss9241/malaria-pyspark/blob/main/notebooks/02_training.ipynb), adapter DATA_DIR et INVENTORY_DIR.
+5. Renseigner PATIENT_MAP_CSV si les identifiants patients sont disponibles. Sinon, activer ALLOW_IMAGE_SPLIT : l'évaluation par image ne garantit pas la généralisation à de nouveaux patients.
+6. Exécuter le notebook et télécharger dashboard_results.zip.
+7. Décompresser le ZIP dans outputs à la racine du dépôt.
 
-Un premier notebook charge les images, identifie leur catégorie, contrôle leur lisibilité et leurs dimensions, détecte les fichiers identiques et exporte un inventaire Parquet. Il doit encore être exécuté avec le dataset. Aucun score de modèle n'est disponible à ce stade.
-
-## Démarrer dans Google Colab
-
-1. Ouvrir [le notebook dans Colab](https://colab.research.google.com/github/Youss9241/malaria-pyspark/blob/main/notebooks/01_exploration.ipynb).
-2. Enregistrer une copie dans son Drive pour conserver les modifications et sorties.
-3. Télécharger et décompresser le dataset associé au [notebook Kaggle de référence](https://www.kaggle.com/code/kushal1996/detecting-malaria-cnn/input).
-4. Placer les dossiers `Parasitized` et `Uninfected` dans Google Drive.
-5. Adapter `DATA_DIR` dans le notebook, puis exécuter les cellules dans l'ordre.
-6. Adapter `OUTPUT_DIR` pour l'export. Un export existant n'est pas écrasé automatiquement.
-
-Les images et les exports volumineux ne doivent pas être ajoutés au dépôt. Documenter la source et la licence du dataset avant de diffuser ses données.
-
-## Étapes à réaliser
-
-- [x] Première version du notebook de lecture et de contrôle.
-- [ ] Exécuter le notebook sur les données et vérifier les sorties.
-- [ ] Documenter le dataset et ses limites.
-- [ ] Extraire les caractéristiques de couleur et de texture.
-- [ ] Préparer les ensembles entraînement/test, par patient si possible.
-- [ ] Construire le pipeline MLlib et entraîner un premier modèle.
-- [ ] Évaluer et exporter les métriques et prédictions.
-- [ ] Créer le dashboard Streamlit.
-- [ ] Préparer la présentation et les instructions de reproduction.
-
-Le choix d'un CNN reste à confirmer avec les consignes du cours. La première version vise un pipeline PySpark/MLlib.
-
-## Travailler en groupe
-
-Chacun travaille sur une branche et propose ses changements par pull request. Éviter de modifier simultanément le même notebook. Avant chaque modification, récupérer la dernière version du dépôt.
-
-Répartition proposée : données et qualité ; extraction des variables ; modèle et évaluation ; dashboard et documentation. Chaque membre doit pouvoir expliquer ses choix et reproduire les résultats.
-
-## Limites
-
-Projet pédagogique, sans usage diagnostique. Les performances ne seront annoncées qu'après exécution et évaluation. Des images d'un même patient dans les ensembles d'entraînement et de test pourraient surestimer les performances : vérifier les identifiants disponibles et documenter toute limite.
-
-## Entraîner le modèle
-
-Après l'exploration, ouvrir [02_training.ipynb dans Colab](https://colab.research.google.com/github/Youss9241/malaria-pyspark/blob/main/notebooks/02_training.ipynb).
-
-1. Enregistrer une copie dans Drive et exécuter l'installation.
-2. Adapter DATA_DIR et INVENTORY_DIR.
-3. Fournir si possible un CSV path,patient_id via PATIENT_MAP_CSV. Le chemin doit correspondre exactement au chemin Spark de l'inventaire.
-4. Si ces identifiants sont indisponibles, activer ALLOW_IMAGE_SPLIT et documenter la limite.
-5. Exécuter dans l'ordre : caractéristiques RGB/LBP, séparation déterministe, pipeline MLlib, évaluation et exports.
-6. Télécharger dashboard_results.zip à la fin.
-
-Le notebook fixe les paramètres avant le test. Pour comparer d'autres paramètres, réserver une validation distincte au sein de l'entraînement ; ne pas choisir les paramètres sur le test.
-
-## Lancer le dashboard sur le PC
-
-Dans le dossier du dépôt :
+## Dashboard
 
 ```bash
 python -m pip install -r requirements.txt
 python -m streamlit run app.py
 ```
 
-Décompresser les fichiers de dashboard_results.zip dans un dossier outputs à la racine du dépôt. Le dashboard affiche une instruction d'attente tant que ces exports ne sont pas présents. Il ne contient aucun score de démonstration.
+Le dashboard affiche la répartition des catégories, les scores, la matrice de confusion, l'importance des variables et les erreurs de classification.
 
-## État de cette deuxième version
+## Fichiers
 
-Le code de préparation, entraînement, export et visualisation est fourni. La checklist ci-dessus décrit les étapes à valider sur les vraies données : elle ne signifie pas que le modèle a déjà été entraîné. Les notebooks sont prévus pour Colab ; le dashboard ne nécessite pas Spark sur le PC.
+| Fichier | Rôle |
+| --- | --- |
+| notebooks/01_exploration.ipynb | Lecture Spark, contrôle des images, doublons et inventaire Parquet |
+| notebooks/02_training.ipynb | Variables RGB/LBP, séparation, entraînement et exports |
+| app.py | Consultation des résultats |
+| requirements.txt | Dépendances du dashboard |
+
+## Travail restant
+
+- Exécuter les notebooks sur le dataset et contrôler les sorties.
+- Documenter la source, la licence et les éventuels identifiants patients.
+- Comparer les résultats à la classe majoritaire.
+- Examiner les erreurs et préparer la présentation.
+
+Le code est disponible ; aucun entraînement sur le dataset n'a encore été vérifié. Le modèle utilise 40 caractéristiques de couleur et texture, avec 100 arbres et une profondeur maximale de 8. Le test est réservé à l'évaluation finale.
+
+## Travail en groupe
+
+Créer une branche par partie, puis une pull request. Éviter les modifications simultanées du même notebook. Les données, modèles et exports restent hors du dépôt.
+
+Projet pédagogique, sans usage diagnostique.
