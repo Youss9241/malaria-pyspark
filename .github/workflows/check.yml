@@ -1,0 +1,31 @@
+name: Vérification du code
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Vérifier scripts et cellules Python
+        run: |
+          python - <<'PY'
+          import ast
+          import json
+          from pathlib import Path
+          for path in Path(".").rglob("*.py"):
+              ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+              print("OK", path)
+          for path in Path("notebooks").glob("*.ipynb"):
+              notebook = json.loads(path.read_text(encoding="utf-8"))
+              for index, cell in enumerate(notebook["cells"]):
+                  if cell["cell_type"] == "code":
+                      source = "".join(cell["source"])
+                      source = "\n".join(line for line in source.splitlines()
+                                         if not line.lstrip().startswith(("%", "!")))
+                      ast.parse(source, filename=f"{path}:cell-{index}")
+              print("OK", path)
+          PY
