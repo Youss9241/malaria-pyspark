@@ -63,11 +63,14 @@ with model_tab:
     with st.expander("Paramètres et métriques de l'exécution"):
         st.json(metrics)
 with error_tab:
+    category = st.selectbox("Catégorie réelle", ["Toutes", "Parasitized", "Uninfected"])
     errors_only = st.checkbox("Afficher uniquement les erreurs", value=True)
     view = predictions
+    if category != "Toutes":
+        view = view[view["category"] == category]
     if errors_only:
         view = view[view["category"] != view["predicted_category"]]
-    st.write(f"{len(view)} prédictions affichables")
+    st.write(f"{len(view)} prédictions sélectionnées")
     st.dataframe(view.head(500), hide_index=True)
     st.caption("Table limitée à 500 lignes. Les chemins désignent les images dans l'environnement Colab ; les images ne sont pas incluses dans l'export.")
     st.download_button("Télécharger la sélection CSV", view.to_csv(index=False),
